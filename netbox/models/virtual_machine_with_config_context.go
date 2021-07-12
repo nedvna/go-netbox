@@ -117,7 +117,7 @@ type VirtualMachineWithConfigContext struct {
 	// VCPUs
 	// Maximum: 32767
 	// Minimum: 0
-	Vcpus *int64 `json:"vcpus,omitempty"`
+	Vcpus *string `json:"vcpus,omitempty"`
 }
 
 // Validate validates this virtual machine with config context
@@ -481,12 +481,13 @@ func (m *VirtualMachineWithConfigContext) validateVcpus(formats strfmt.Registry)
 		return nil
 	}
 
-	if err := validate.MinimumInt("vcpus", "body", int64(*m.Vcpus), 0, false); err != nil {
-		return err
-	}
-
-	if err := validate.MaximumInt("vcpus", "body", int64(*m.Vcpus), 32767, false); err != nil {
-		return err
+	if Cpus, err := strconv.ParseFloat(*m.Vcpus, 64); err != nil {
+		if err := validate.Minimum("vcpus", "body", Cpus, 0.0, false); err != nil {
+			return err
+		}
+		if err := validate.Maximum("vcpus", "body", Cpus, 32767.0, false); err != nil {
+			return err
+		}
 	}
 
 	return nil
